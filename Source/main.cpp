@@ -1,7 +1,6 @@
 #include <iostream>
 #include "ThreadPool.h"
 
-
 int main() {
 
     ThreadPool pool{2};
