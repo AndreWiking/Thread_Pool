@@ -17,7 +17,7 @@ public:
         }
 
         buffer_.push_back(std::move(value));
-        buffer_size_.fetch_add(1);
+        ++buffer_size_;
         not_empty_queue_.notify_one();
 
         return true;
@@ -42,7 +42,7 @@ public:
 
         T value{std::move(buffer_.front())};
         buffer_.pop_front();
-        buffer_size_.fetch_sub(1);
+        --buffer_size_;
 
         return std::move(value);
     }
@@ -51,15 +51,16 @@ public:
         std::lock_guard<std::mutex> lock(mutex_);
         is_cancel_ = true;
         buffer_.clear();
+        buffer_size_ = 0;
         not_empty_queue_.notify_all();
     }
 
     bool IsEmpty() {
-        return buffer_size_.load() == 0;
+        return buffer_size_ == 0;
     }
 private:
     std::deque<T> buffer_;
-    std::atomic<int> buffer_size_{0};
+    size_t buffer_size_{0};
     std::mutex mutex_;
     std::condition_variable not_empty_queue_;
     bool is_cancel_{false};
