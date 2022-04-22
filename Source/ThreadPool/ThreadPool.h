@@ -2,13 +2,44 @@
 #ifndef THREAD_POOL_H
 #define THREAD_POOL_H
 
-#include "UnboundedBlockingQueue.h"
+#include "BlockingQueue/UnboundedBlockingQueue.h"
 #include <cstdio>
 #include <functional>
 #include <thread>
 #include <vector>
 #include <iostream>
 #include <future>
+
+template <typename T>
+class Task{
+public:
+
+    explicit Task(std::function<T> function, std::promise<T> promise) : function_(std::move(function)), promise_(std::move(promise)) {}
+
+    void operator () () {
+        bool set_promise = false;
+        T val{};
+        try {
+            val = function_();
+        }
+        catch (const std::exception&) {
+            promise_.set_exception(std::current_exception());
+            set_promise = true;
+        }
+        catch (...) {}
+        if (!set_promise) {
+            promise_.set_value(val);
+        }
+    }
+
+    Task(const Task&) = delete;
+
+    Task& operator =(const Task&) = delete;
+
+private:
+    std::function<T> function_;
+    std::promise<T> promise_;
+};
 
 class ThreadPool {
 public:
@@ -24,7 +55,8 @@ public:
     std::future<T> AddTask(std::function<T()> task) {
         std::promise<T> promise;
         std::future<T> future = promise.get_future();
-        task_queue_.Push({std::move(task), std::move(promise)});
+
+        task_queue_.Push(Task<T>(future, promise));
 
         return std::move(future);
     }
@@ -44,23 +76,9 @@ public:
 private:
     void Work() {
         while (true) {
-            std::optional<std::pair<std::function<int()>, std::promise<int>>> top_element(task_queue_.Pop());
-            std::function<int()> &function = top_element->first;
-            std::promise<int> &promise = top_element->second;
-            bool set_promise = false;
+            std::optional<std::unique_ptr<Task<int>>> top_element(task_queue_.Pop());
             if (top_element.has_value()) {
-                int val = 0;
-                try {
-                    val = function();
-                }
-                catch (const std::exception&) {
-                    promise.set_exception(std::current_exception());
-                    set_promise = true;
-                }
-                catch (...) {}
-                if (!set_promise) {
-                    promise.set_value(val);
-                }
+                (*(*top_element))();
                 empty_task_queue_.notify_all();
             }
             else {
@@ -72,7 +90,7 @@ private:
 private:
     bool is_stopped_{false};
     std::vector<std::thread> workers_;
-    UnboundedBlockingQueue<std::pair<std::function<int()>, std::promise<int>>> task_queue_{};
+    UnboundedBlockingQueue<std::unique_ptr<Task<int>>> task_queue_;
     std::condition_variable empty_task_queue_;
     std::mutex mutex_;
 };
@@ -82,14 +100,5 @@ inline ThreadPool* Current() {
 }
 
 #endif //THREAD_POOL_H
-
-
-
-
-
-
-
-
-
 
 

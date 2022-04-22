@@ -61,11 +61,11 @@ build CMakeFiles/Thread_Pool.dir/Source/ThreadPool/ThreadPool.cpp.o: CXX_COMPILE
   OBJECT_DIR = CMakeFiles/Thread_Pool.dir
   OBJECT_FILE_DIR = CMakeFiles/Thread_Pool.dir/Source/ThreadPool
 
-build CMakeFiles/Thread_Pool.dir/Source/ThreadPool/UnboundedBlockingQueue.cpp.o: CXX_COMPILER__Thread_Pool_Debug /Users/andrewiking/CLionProjects/Thread_Pool/Source/ThreadPool/UnboundedBlockingQueue.cpp || cmake_object_order_depends_target_Thread_Pool
-  DEP_FILE = CMakeFiles/Thread_Pool.dir/Source/ThreadPool/UnboundedBlockingQueue.cpp.o.d
+build CMakeFiles/Thread_Pool.dir/Source/ThreadPool/BlockingQueue/UnboundedBlockingQueue.cpp.o: CXX_COMPILER__Thread_Pool_Debug /Users/andrewiking/CLionProjects/Thread_Pool/Source/ThreadPool/BlockingQueue/UnboundedBlockingQueue.cpp || cmake_object_order_depends_target_Thread_Pool
+  DEP_FILE = CMakeFiles/Thread_Pool.dir/Source/ThreadPool/BlockingQueue/UnboundedBlockingQueue.cpp.o.d
   FLAGS = -g -arch x86_64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX11.3.sdk -std=gnu++17
   OBJECT_DIR = CMakeFiles/Thread_Pool.dir
-  OBJECT_FILE_DIR = CMakeFiles/Thread_Pool.dir/Source/ThreadPool
+  OBJECT_FILE_DIR = CMakeFiles/Thread_Pool.dir/Source/ThreadPool/BlockingQueue
 
 
 # =============================================================================
@@ -75,7 +75,7 @@ build CMakeFiles/Thread_Pool.dir/Source/ThreadPool/UnboundedBlockingQueue.cpp.o:
 #############################################
 # Link the executable Thread_Pool
 
-build Thread_Pool: CXX_EXECUTABLE_LINKER__Thread_Pool_Debug CMakeFiles/Thread_Pool.dir/Source/main.cpp.o CMakeFiles/Thread_Pool.dir/Source/ThreadPool/ThreadPool.cpp.o CMakeFiles/Thread_Pool.dir/Source/ThreadPool/UnboundedBlockingQueue.cpp.o
+build Thread_Pool: CXX_EXECUTABLE_LINKER__Thread_Pool_Debug CMakeFiles/Thread_Pool.dir/Source/main.cpp.o CMakeFiles/Thread_Pool.dir/Source/ThreadPool/ThreadPool.cpp.o CMakeFiles/Thread_Pool.dir/Source/ThreadPool/BlockingQueue/UnboundedBlockingQueue.cpp.o
   FLAGS = -g -arch x86_64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX11.3.sdk
   OBJECT_DIR = CMakeFiles/Thread_Pool.dir
   POST_BUILD = :
