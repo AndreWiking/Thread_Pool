@@ -11,10 +11,10 @@ class UnboundedBlockingQueue {
 public:
     UnboundedBlockingQueue() = default;
 
-    void Push(T value) {
+    void Push(T &&value) {
         std::lock_guard<std::mutex> lock(mutex_);
 
-        buffer_.push_back(std::move(value));
+        buffer_.push_back(std::forward<T>(value));
         ++buffer_size_;
         not_empty_queue_.notify_one();
 
@@ -53,7 +53,8 @@ public:
     }
 
     bool IsEmpty() {
-        return buffer_size_ == 0;
+        std::lock_guard<std::mutex> lock(mutex_);
+        return buffer_.empty();
     }
 private:
     std::deque<T> buffer_;
