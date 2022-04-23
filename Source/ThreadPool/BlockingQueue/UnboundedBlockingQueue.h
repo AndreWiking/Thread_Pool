@@ -11,18 +11,13 @@ class UnboundedBlockingQueue {
 public:
     UnboundedBlockingQueue() = default;
 
-    bool Push(T value) {
+    void Push(T value) {
         std::lock_guard<std::mutex> lock(mutex_);
-
-        if (is_cancel_) {
-            return false;
-        }
 
         buffer_.push_back(std::move(value));
         ++buffer_size_;
         not_empty_queue_.notify_one();
 
-        return true;
     }
 
     std::optional<T> Pop() {
@@ -46,7 +41,7 @@ public:
         buffer_.pop_front();
         --buffer_size_;
 
-        return std::move(value);
+        return value;
     }
 
     void Cancel() {

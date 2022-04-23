@@ -1,22 +1,21 @@
 #include <iostream>
 #include "ThreadPool/ThreadPool.h"
 
-void Test1() {
+int sum(int a, int b) {
+    return a + b;
+}
+
+void Test() {
     ThreadPool pool{2};
 
-    std::future<int> f1 = pool.AddTask([](){
-        std::this_thread::sleep_for(std::chrono::seconds(2));
-        std::cout << "Hi 1\n";
-        return 1;
-    });
+    std::future<int> f1 = pool.AddTask(sum, 4, 10);
     std::future<int> f2 = pool.AddTask([](){
         std::this_thread::sleep_for(std::chrono::seconds(4));
         std::cout << "Hi 2\n";
 
         std::future<int> fc = Current()->AddTask([](){
             std::cout << "child\n";
-            throw std::runtime_error("Example exp");
-            //throw 44; // fix int exp
+            throw std::runtime_error("exp");
             return 22;
         });
         try {
@@ -44,30 +43,10 @@ void Test1() {
     pool.Stop();
 }
 
-int sum(int a, int b) {
-    return a + b;
-}
-
-void Test2() {
-    std::cout << "\nTest2\n";
-    ThreadPool pool{2};
-
-    std::function<int(int)> func = [](int a) { std::cout << "func\n"; return a + 5; };
-
-    //auto f1 = pool.AddTask([](int a) { std::cout << "func\n"; return a + 5; }, 10);
-    auto f1 = pool.AddTask(sum, 10, 22);
-
-    int v1 = f1.get();
-    std::cout << "res1 " << v1 << '\n';
-
-    pool.Join();
-    pool.Stop();
-}
 
 int main() {
 
-    Test1();
-    Test2();
+    Test();
 
     return 0;
 }
