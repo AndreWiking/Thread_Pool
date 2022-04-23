@@ -49,6 +49,7 @@ int sum(int a, int b) {
 }
 
 void Test2() {
+    std::cout << "\nTest2\n";
     ThreadPool pool{2};
 
     std::function<int(int)> func = [](int a) { std::cout << "func\n"; return a + 5; };
