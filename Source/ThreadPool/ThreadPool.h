@@ -10,36 +10,36 @@
 #include <iostream>
 #include <future>
 
-template <typename T>
-class Task{
-public:
-
-    explicit Task(std::function<T> function, std::promise<T> promise) : function_(std::move(function)), promise_(std::move(promise)) {}
-
-    void operator () () {
-        bool set_promise = false;
-        T val{};
-        try {
-            val = function_();
-        }
-        catch (const std::exception&) {
-            promise_.set_exception(std::current_exception());
-            set_promise = true;
-        }
-        catch (...) {}
-        if (!set_promise) {
-            promise_.set_value(val);
-        }
-    }
-
-    Task(const Task&) = delete;
-
-    Task& operator =(const Task&) = delete;
-
-private:
-    std::function<T> function_;
-    std::promise<T> promise_;
-};
+//template <typename T>
+//class Task{
+//public:
+//
+//    explicit Task(std::function<T> function, std::promise<T> promise) : function_(std::move(function)), promise_(std::move(promise)) {}
+//
+//    void operator () () {
+//        bool set_promise = false;
+//        T val{};
+//        try {
+//            val = function_();
+//        }
+//        catch (const std::exception&) {
+//            promise_.set_exception(std::current_exception());
+//            set_promise = true;
+//        }
+//        catch (...) {}
+//        if (!set_promise) {
+//            promise_.set_value(val);
+//        }
+//    }
+//
+//    Task(const Task&) = delete;
+//
+//    Task& operator =(const Task&) = delete;
+//
+//private:
+//    std::function<T> function_;
+//    std::promise<T> promise_;
+//};
 
 class ThreadPool {
 public:
@@ -51,14 +51,16 @@ public:
     ThreadPool(const ThreadPool&) = delete;
     ThreadPool& operator =(const ThreadPool&) = delete;
 
-    template<typename T>
-    std::future<T> AddTask(std::function<T()> task) {
-        std::promise<T> promise;
-        std::future<T> future = promise.get_future();
+    template<typename R, typename... Args>
+    std::future<R> AddTask(std::function<R(Args...)> task) {
+        //std::packaged_task<R(Args...)> packaged_task(task);
+        auto function_ptr = std::make_shared<std::packaged_task<R(Args...)>>(task);
+        std::function<void()> function = [function_ptr]() {
+            (*function_ptr)(110);
+        };
 
-        task_queue_.Push(Task<T>(future, promise));
-
-        return std::move(future);
+        task_queue_.Push(function);
+        return function_ptr->get_future();
     }
 
     void Join() {
@@ -76,10 +78,10 @@ public:
 private:
     void Work() {
         while (true) {
-            std::optional<std::unique_ptr<Task<int>>> top_element(task_queue_.Pop());
+            std::optional<std::function<void()>> top_element(task_queue_.Pop());
+            empty_task_queue_.notify_one();
             if (top_element.has_value()) {
-                (*(*top_element))();
-                empty_task_queue_.notify_all();
+                (*top_element)();
             }
             else {
                 break;
@@ -90,7 +92,7 @@ private:
 private:
     bool is_stopped_{false};
     std::vector<std::thread> workers_;
-    UnboundedBlockingQueue<std::unique_ptr<Task<int>>> task_queue_;
+    UnboundedBlockingQueue<std::function<void()>> task_queue_;
     std::condition_variable empty_task_queue_;
     std::mutex mutex_;
 };
