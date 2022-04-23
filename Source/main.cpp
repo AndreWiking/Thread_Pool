@@ -53,7 +53,8 @@ void Test2() {
 
     std::function<int(int)> func = [](int a) { std::cout << "func\n"; return a + 5; };
 
-    auto f1 = pool.AddTask([](int a) { std::cout << "func\n"; return a + 5; }, 10);
+    //auto f1 = pool.AddTask([](int a) { std::cout << "func\n"; return a + 5; }, 10);
+    auto f1 = pool.AddTask(sum, 10, 22);
 
     int v1 = f1.get();
     std::cout << "res1 " << v1 << '\n';
@@ -65,7 +66,7 @@ void Test2() {
 int main() {
 
     Test1();
-    //Test2();
+    Test2();
 
     return 0;
 }
