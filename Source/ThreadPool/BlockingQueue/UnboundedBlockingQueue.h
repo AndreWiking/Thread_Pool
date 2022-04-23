@@ -10,6 +10,7 @@ template <typename T>
 class UnboundedBlockingQueue {
 public:
     UnboundedBlockingQueue() = default;
+
     bool Push(T value) {
         std::lock_guard<std::mutex> lock(mutex_);
 
