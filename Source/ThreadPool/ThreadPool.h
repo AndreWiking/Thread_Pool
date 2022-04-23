@@ -51,15 +51,15 @@ public:
     ThreadPool(const ThreadPool&) = delete;
     ThreadPool& operator =(const ThreadPool&) = delete;
 
-    template<typename R, typename... Args>
-    std::future<R> AddTask(std::function<R(Args...)> task) {
-        //std::packaged_task<R(Args...)> packaged_task(task);
-        auto function_ptr = std::make_shared<std::packaged_task<R(Args...)>>(task);
-        std::function<void()> function = [function_ptr]() {
-            (*function_ptr)(110);
-        };
+    template<typename FuncType, typename... ArgTypes>
+    auto AddTask(FuncType &&func, ArgTypes&&... args)->std::future<decltype(func(args...))> {
 
-        task_queue_.Push(function);
+        auto function_ptr = std::make_shared<std::packaged_task<decltype(func(args...))()>>(
+                std::bind(std::forward<FuncType>(func), std::forward<ArgTypes>(args)...));
+
+        task_queue_.Push([function_ptr]() {
+            (*function_ptr)();
+        });
         return function_ptr->get_future();
     }
 
